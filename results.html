@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>สรุปผลประเมินงานเลี้ยง</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <style>
         body { font-family: 'Prompt', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px 15px; color: #333; }
@@ -31,11 +33,9 @@
         /* เลย์เอาต์ส่วนกราฟ */
         .chart-wrapper { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; }
         @media(min-width: 768px) { .chart-wrapper { grid-template-columns: 2fr 1fr; } }
-        .chart-box { background: #fff; padding: 20px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .chart-title { font-size: 1.05rem; font-weight: 500; margin-bottom: 10px; color: #444; text-align: center; }
-        
-        /* ปรับความสูงของกราฟให้พอดีกับมือถือ */
-        .canvas-container { position: relative; height: 320px; width: 100%; }
+        .chart-box { background: #fff; padding: 20px 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .chart-title { font-size: 1.05rem; font-weight: 500; margin-bottom: 15px; color: #444; text-align: center; }
+        .canvas-container { position: relative; height: 280px; width: 100%; }
 
         /* สไตล์กล่องคอมเมนต์ */
         .feedback-section { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px; }
@@ -73,9 +73,9 @@
 
             <div class="chart-wrapper">
                 <div class="chart-box">
-                    <div class="chart-title">จุดเด่น - จุดที่ต้องปรับปรุง</div>
+                    <div class="chart-title">คะแนนเฉลี่ยรายหัวข้อ</div>
                     <div class="canvas-container">
-                        <canvas id="radarChart"></canvas>
+                        <canvas id="barChart"></canvas>
                     </div>
                 </div>
 
@@ -101,6 +101,9 @@
     </div>
 
     <script>
+        // เปิดใช้งาน Plugin โชว์ตัวเลข
+        Chart.register(ChartDataLabels);
+
         // URL ของคุณ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyk7veuNEPJymxJjIjIoJfKifcgEcpzIj5TlQHrY_nJ_XfRfNeiWLOs7cjT1J9CJtJu/exec';
 
@@ -159,51 +162,60 @@
                     (sum.q5 / count).toFixed(2)
                 ];
 
-                // --- วาดกราฟใยแมงมุม (อัปเกรดให้ใหญ่เต็มจอ) ---
-                new Chart(document.getElementById('radarChart'), {
-                    type: 'radar',
+                // ชุดสีแบบพาสเทลสดใส สำหรับแต่ละหัวข้อ
+                const barColors = [
+                    'rgba(255, 99, 132, 0.8)',   // ชมพูอมแดง (รสชาติ)
+                    'rgba(255, 159, 64, 0.8)',   // ส้ม (หลากหลาย)
+                    'rgba(255, 205, 86, 0.8)',   // เหลือง (สถานที่)
+                    'rgba(75, 192, 192, 0.8)',   // เขียวมิ้นต์ (บริการ)
+                    'rgba(54, 162, 235, 0.8)'    // ฟ้า (ภาพรวม)
+                ];
+
+                // --- วาดกราฟแท่งแนวนอน (อัปเกรดสี + โชว์ตัวเลข) ---
+                new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
                     data: {
-                        // เปลี่ยนคำให้สั้นลง เพื่อไม่ให้กินพื้นที่ซ้าย-ขวา
-                        labels: ['อาหาร', 'หลากหลาย', 'สถานที่', 'บริการ', 'ภาพรวมงาน'],
+                        labels: ['อาหาร', 'ความหลากหลาย', 'สถานที่', 'บริการ', 'ภาพรวมงาน'],
                         datasets: [{
                             label: 'คะแนนเฉลี่ย',
                             data: averages,
-                            backgroundColor: 'rgba(0, 86, 179, 0.2)',
-                            borderColor: 'rgba(0, 86, 179, 1)',
-                            pointBackgroundColor: '#ffc107',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: '#ffc107',
-                            borderWidth: 2
+                            backgroundColor: barColors, // ใส่ชุดสี
+                            borderRadius: 6
                         }]
                     },
                     options: { 
+                        indexAxis: 'y', 
                         responsive: true, 
                         maintainAspectRatio: false, 
                         layout: {
-                            padding: 5 // ลดระยะขอบนอกสุด กราฟจะได้ขยายได้เต็มที่
+                            padding: { right: 35 } // เผื่อที่ขวาไว้ไม่ให้ตัวเลขตกขอบ
                         },
                         scales: { 
-                            r: { 
+                            x: { 
                                 min: 0, 
-                                max: 5, 
+                                max: 5,
                                 ticks: { 
                                     stepSize: 1, 
-                                    backdropColor: 'transparent',
-                                    font: { size: 10 } // ลดขนาดตัวเลขแกนกลางให้เล็กลง
-                                }, 
-                                pointLabels: { 
-                                    font: { 
-                                        size: 13, // ปรับขนาดฟอนต์ให้กำลังดีบนมือถือ
-                                        family: "'Prompt', sans-serif",
-                                        weight: '500' 
-                                    },
-                                    color: '#333',
-                                    padding: 8 // ดึงตัวหนังสือให้เข้ามาใกล้กราฟมากขึ้น
+                                    font: { family: "'Prompt', sans-serif" },
+                                    callback: function(value) { if (value % 1 === 0) return value; }
                                 } 
-                            } 
+                            },
+                            y: {
+                                ticks: { font: { family: "'Prompt', sans-serif", size: 13, weight: '500' }, color: '#333' }
+                            }
                         }, 
-                        plugins: { legend: { display: false } } 
+                        plugins: { 
+                            legend: { display: false },
+                            datalabels: { // ตั้งค่าตัวเลขบนกราฟแท่ง
+                                anchor: 'end',
+                                align: 'end',
+                                color: '#1a1a1a',
+                                font: { weight: 'bold', family: "'Prompt', sans-serif", size: 13 },
+                                formatter: function(value) {
+                                    return value; // โชว์ค่าเฉลี่ย
+                                }
+                            }
+                        } 
                     }
                 });
 
@@ -214,7 +226,7 @@
                         labels: ['เหมาะสม', 'ไม่เหมาะสม'],
                         datasets: [{
                             data: [suitableCount, notSuitableCount],
-                            backgroundColor: ['#28a745', '#dc3545'],
+                            backgroundColor: ['#6edb87', '#ff7a7a'],
                             borderWidth: 0
                         }]
                     },
@@ -223,7 +235,16 @@
                         maintainAspectRatio: false, 
                         cutout: '65%', 
                         layout: { padding: 10 }, 
-                        plugins: { legend: { position: 'bottom', labels: { font: { family: "'Prompt', sans-serif", size: 13 } } } } 
+                        plugins: { 
+                            legend: { position: 'bottom', labels: { font: { family: "'Prompt', sans-serif", size: 13 } } },
+                            datalabels: { // โชว์ตัวเลขบนกราฟโดนัทด้วย
+                                color: '#fff',
+                                font: { weight: 'bold', family: "'Prompt', sans-serif", size: 14 },
+                                formatter: function(value) {
+                                    return value > 0 ? value : '';
+                                }
+                            }
+                        } 
                     }
                 });
 
