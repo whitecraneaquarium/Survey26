@@ -31,12 +31,11 @@
         /* เลย์เอาต์ส่วนกราฟ */
         .chart-wrapper { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; }
         @media(min-width: 768px) { .chart-wrapper { grid-template-columns: 2fr 1fr; } }
-        .chart-box { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .chart-title { font-size: 1.05rem; font-weight: 500; margin-bottom: 15px; color: #444; text-align: center; }
+        .chart-box { background: #fff; padding: 20px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .chart-title { font-size: 1.05rem; font-weight: 500; margin-bottom: 10px; color: #444; text-align: center; }
         
-        /* ปรับความสูงของกราฟให้กว้างขึ้น */
-        .canvas-container { position: relative; height: 300px; width: 100%; }
-        .canvas-container.large { height: 380px; } /* เพิ่มคลาสสำหรับกราฟที่ต้องการความใหญ่เป็นพิเศษ */
+        /* ปรับความสูงของกราฟให้พอดีกับมือถือ */
+        .canvas-container { position: relative; height: 320px; width: 100%; }
 
         /* สไตล์กล่องคอมเมนต์ */
         .feedback-section { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px; }
@@ -75,14 +74,14 @@
             <div class="chart-wrapper">
                 <div class="chart-box">
                     <div class="chart-title">จุดเด่น - จุดที่ต้องปรับปรุง</div>
-                    <div class="canvas-container large">
+                    <div class="canvas-container">
                         <canvas id="radarChart"></canvas>
                     </div>
                 </div>
 
                 <div class="chart-box">
                     <div class="chart-title">การจัดที่นี่ในโอกาสต่อไป?</div>
-                    <div class="canvas-container large">
+                    <div class="canvas-container">
                         <canvas id="doughnutChart"></canvas>
                     </div>
                 </div>
@@ -160,11 +159,12 @@
                     (sum.q5 / count).toFixed(2)
                 ];
 
-                // --- วาดกราฟใยแมงมุม (อัปเกรดขนาดและฟอนต์) ---
+                // --- วาดกราฟใยแมงมุม (อัปเกรดให้ใหญ่เต็มจอ) ---
                 new Chart(document.getElementById('radarChart'), {
                     type: 'radar',
                     data: {
-                        labels: ['อาหาร', 'ความหลากหลาย', 'สถานที่', 'บริการ', 'ภาพรวมงาน'],
+                        // เปลี่ยนคำให้สั้นลง เพื่อไม่ให้กินพื้นที่ซ้าย-ขวา
+                        labels: ['อาหาร', 'หลากหลาย', 'สถานที่', 'บริการ', 'ภาพรวมงาน'],
                         datasets: [{
                             label: 'คะแนนเฉลี่ย',
                             data: averages,
@@ -181,7 +181,7 @@
                         responsive: true, 
                         maintainAspectRatio: false, 
                         layout: {
-                            padding: 15 // เพิ่มระยะขอบไม่ให้ป้ายกำกับโดนตัด
+                            padding: 5 // ลดระยะขอบนอกสุด กราฟจะได้ขยายได้เต็มที่
                         },
                         scales: { 
                             r: { 
@@ -190,15 +190,16 @@
                                 ticks: { 
                                     stepSize: 1, 
                                     backdropColor: 'transparent',
-                                    font: { size: 11 } // ขนาดตัวเลขแกน
+                                    font: { size: 10 } // ลดขนาดตัวเลขแกนกลางให้เล็กลง
                                 }, 
                                 pointLabels: { 
                                     font: { 
-                                        size: 14, // ขยายฟอนต์ข้อความให้ใหญ่ขึ้น
+                                        size: 13, // ปรับขนาดฟอนต์ให้กำลังดีบนมือถือ
                                         family: "'Prompt', sans-serif",
-                                        weight: '500' // ทำให้ตัวหนังสือหนาขึ้น
+                                        weight: '500' 
                                     },
-                                    color: '#333'
+                                    color: '#333',
+                                    padding: 8 // ดึงตัวหนังสือให้เข้ามาใกล้กราฟมากขึ้น
                                 } 
                             } 
                         }, 
@@ -221,7 +222,7 @@
                         responsive: true, 
                         maintainAspectRatio: false, 
                         cutout: '65%', 
-                        layout: { padding: 15 }, // ขยับกราฟโดนัทให้บาลานซ์กับใยแมงมุม
+                        layout: { padding: 10 }, 
                         plugins: { legend: { position: 'bottom', labels: { font: { family: "'Prompt', sans-serif", size: 13 } } } } 
                     }
                 });
