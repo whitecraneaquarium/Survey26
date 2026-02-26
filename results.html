@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard สรุปผล</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #e9ecef; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h2 { text-align: center; color: #0056b3; margin-top: 10px; margin-bottom: 5px; }
+        .total-responses { text-align: center; font-size: 1rem; color: #666; margin-bottom: 20px; }
+        .loading { text-align: center; color: #007bff; font-weight: 500; margin: 30px 0; }
+        
+        /* กล่องการ์ดสำหรับใส่กราฟและคอมเมนต์ */
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 15px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
+        
+        /* จัด Layout กราฟ 2 อันให้อยู่ข้างกันบนคอม และเรียงลงมาบนมือถือ */
+        .charts-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media(min-width: 768px) { .charts-grid { grid-template-columns: 2fr 1fr; } }
+        
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        
+        /* สไตล์ของกล่องอ่านคอมเมนต์ */
+        .comments-box { max-height: 250px; overflow-y: auto; padding-right: 10px; }
+        .comment-item { background: #f8f9fa; padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; font-size: 0.95rem; border-left: 4px solid #17a2b8; }
+        .comment-item.empty { border-left: 4px solid #ced4da; color: #6c757d; font-style: italic; }
+        
+        /* แต่ง Scrollbar ให้สวยงาม */
+        .comments-box::-webkit-scrollbar { width: 6px; }
+        .comments-box::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>📊 รายงานความพึงพอใจงานเลี้ยง</h2>
+        <div class="total-responses" id="totalCount">จำนวนผู้ตอบแบบสอบถาม: 0 คน</div>
+        
+        <div id="loadingStatus" class="loading">กำลังดึงข้อมูลจากฐานข้อมูล... ⏳</div>
+        
+        <div id="dashboardContent" style="display: none;">
+            
+            <div class="charts-grid">
+                <div class="card">
+                    <div class="card-title">คะแนนความพึงพอใจเฉลี่ย (เต็ม 5)</div>
+                    <div class="chart-container">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">ความเหมาะสมของร้านนี้</div>
+                    <div class="chart-container">
+                        <canvas id="doughnutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">💬 ข้อเสนอแนะเพื่อการปรับปรุง</div>
+                <div class="comments-box" id="feedbackBox">
+                    </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📌 ร้านอาหาร / รูปแบบงาน ที่อยากให้จัดครั้งต่อไป</div>
+                <div class="comments-box" id="recommendBox">
+                    </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyk7veuNEPJymxJjIjIoJfKifcgEcpzIj5TlQHrY_nJ_XfRfNeiWLOs7cjT1J9CJtJu/exec';
+
+        fetch(scriptURL)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingStatus').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+                document.getElementById('totalCount').innerText = `จำนวนผู้ตอบแบบสอบถาม: ${data.length} คน`;
+
+                if(data.length === 0) return;
+
+                // --- 1. เตรียมข้อมูลสำหรับกราฟแท่ง (คะแนนเฉลี่ย) ---
+                let sum = { q1: 0, q2: 0, q3: 0, q4: 0, q5: 0 };
+                let suitableCount = 0;
+                let notSuitableCount = 0;
+
+                data.forEach(row => {
+                    sum.q1 += Number(row.q1) || 0;
+                    sum.q2 += Number(row.q2) || 0;
+                    sum.q3 += Number(row.q3) || 0;
+                    sum.q4 += Number(row.q4) || 0;
+                    sum.q5 += Number(row.q5) || 0;
+
+                    // นับคะแนนข้อ 6
+                    if(row.q6 === 'เหมาะสม') suitableCount++;
+                    else if(row.q6 === 'ไม่เหมาะสม') notSuitableCount++;
+                });
+
+                let count = data.length;
+                let averages = [
+                    (sum.q1 / count).toFixed(2), (sum.q2 / count).toFixed(2),
+                    (sum.q3 / count).toFixed(2), (sum.q4 / count).toFixed(2),
+                    (sum.q5 / count).toFixed(2)
+                ];
+
+                // --- 2. วาดกราฟแท่ง ---
+                new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['รสชาติ', 'ความหลากหลาย', 'สถานที่', 'การบริการ', 'ภาพรวม'],
+                        datasets: [{
+                            label: 'คะแนนเฉลี่ย',
+                            data: averages,
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 5 } }, plugins: { legend: { display: false } } }
+                });
+
+                // --- 3. วาดกราฟโดนัท ---
+                new Chart(document.getElementById('doughnutChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['เหมาะสม', 'ไม่เหมาะสม'],
+                        datasets: [{
+                            data: [suitableCount, notSuitableCount],
+                            backgroundColor: ['#28a745', '#dc3545']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                // --- 4. ดึงคอมเมนต์มาแสดง ---
+                const feedbackBox = document.getElementById('feedbackBox');
+                const recommendBox = document.getElementById('recommendBox');
+
+                data.forEach(row => {
+                    // คอมเมนต์ข้อ 7
+                    if(row.q7 && row.q7.trim() !== "") {
+                        let div = document.createElement('div');
+                        div.className = 'comment-item';
+                        div.innerText = row.q7;
+                        feedbackBox.appendChild(div);
+                    }
+                    
+                    // คอมเมนต์ข้อ 8
+                    if(row.q8 && row.q8.trim() !== "") {
+                        let div = document.createElement('div');
+                        div.className = 'comment-item';
+                        div.innerText = row.q8;
+                        recommendBox.appendChild(div);
+                    }
+                });
+
+                // ถ้าไม่มีใครคอมเมนต์เลย
+                if(feedbackBox.innerHTML === "") feedbackBox.innerHTML = '<div class="comment-item empty">ยังไม่มีข้อเสนอแนะ</div>';
+                if(recommendBox.innerHTML === "") recommendBox.innerHTML = '<div class="comment-item empty">ยังไม่มีการแนะนำร้าน</div>';
+
+            })
+            .catch(error => {
+                document.getElementById('loadingStatus').innerText = '❌ เกิดข้อผิดพลาดในการดึงข้อมูล';
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>

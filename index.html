@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>แบบสอบถามงานเลี้ยงบริษัท</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { text-align: center; color: #0056b3; font-size: 1.4rem; margin-bottom: 5px; }
+        p.desc { text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 25px; }
+        
+        .section-title { background: #e9ecef; padding: 10px; border-radius: 8px; font-weight: 500; margin-top: 25px; margin-bottom: 15px; }
+        .form-group { margin-bottom: 20px; }
+        label.question { display: block; margin-bottom: 10px; font-weight: 400; font-size: 0.95rem; }
+        
+        input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-family: 'Prompt', sans-serif; font-size: 1rem; box-sizing: border-box; }
+        
+        .rating-group { display: flex; justify-content: space-between; gap: 5px; }
+        .rating-group label { flex: 1; text-align: center; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px 0; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .rating-group input[type="radio"] { display: none; }
+        .rating-group input[type="radio"]:checked + label { background: #0056b3; color: white; border-color: #0056b3; }
+
+        .choice-group label { display: block; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+        .choice-group input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+        button[type="submit"] { width: 100%; padding: 15px; background-color: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-family: 'Prompt', sans-serif; cursor: pointer; margin-top: 20px; transition: 0.3s; font-weight: 500; }
+        button[type="submit"]:disabled { background-color: #6c757d; }
+        
+        /* ตกแต่งหน้าจอขอบคุณให้แคปรูปสวยๆ */
+        #successMessage { display: none; text-align: center; padding: 40px 20px; }
+        #successMessage h3 { color: #28a745; font-size: 1.5rem; margin-bottom: 10px; }
+        .time-box { background: #e9ecef; padding: 15px; border-radius: 8px; display: inline-block; margin-top: 20px; border: 2px dashed #0056b3; }
+        .time-box span { font-size: 1.8rem; font-weight: bold; color: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="formContainer">
+    <h2>🎉 แบบประเมินงานเลี้ยง</h2>
+    <p class="desc">เพื่อนำไปปรับปรุงการจัดงานเลี้ยงในครั้งต่อไป</p>
+    
+    <form id="surveyForm">
+        <div class="section-title">ส่วนที่ 1: ความพึงพอใจต่องานเลี้ยง</div>
+        <p style="font-size: 0.85rem; color: #888; text-align: center; margin-bottom: 15px;">(1 = น้อยที่สุด, 5 = มากที่สุด)</p>
+
+        <div class="form-group">
+            <label class="question">1. รสชาติและคุณภาพของอาหารโดยรวม</label>
+            <div class="rating-group">
+                <input type="radio" id="q1_1" name="q1" value="1" required><label for="q1_1">1</label>
+                <input type="radio" id="q1_2" name="q1" value="2"><label for="q1_2">2</label>
+                <input type="radio" id="q1_3" name="q1" value="3"><label for="q1_3">3</label>
+                <input type="radio" id="q1_4" name="q1" value="4"><label for="q1_4">4</label>
+                <input type="radio" id="q1_5" name="q1" value="5"><label for="q1_5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="question">2. ความหลากหลายและความเพียงพอของอาหารและเครื่องดื่ม</label>
+            <div class="rating-group">
+                <input type="radio" id="q2_1" name="q2" value="1" required><label for="q2_1">1</label>
+                <input type="radio" id="q2_2" name="q2" value="2"><label for="q2_2">2</label>
+                <input type="radio" id="q2_3" name="q2" value="3"><label for="q2_3">3</label>
+                <input type="radio" id="q2_4" name="q2" value="4"><label for="q2_4">4</label>
+                <input type="radio" id="q2_5" name="q2" value="5"><label for="q2_5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="question">3. สถานที่ บรรยากาศ และความสะดวกสบาย</label>
+            <div class="rating-group">
+                <input type="radio" id="q3_1" name="q3" value="1" required><label for="q3_1">1</label>
+                <input type="radio" id="q3_2" name="q3" value="2"><label for="q3_2">2</label>
+                <input type="radio" id="q3_3" name="q3" value="3"><label for="q3_3">3</label>
+                <input type="radio" id="q3_4" name="q3" value="4"><label for="q3_4">4</label>
+                <input type="radio" id="q3_5" name="q3" value="5"><label for="q3_5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="question">4. การให้บริการและความใส่ใจของพนักงานร้าน</label>
+            <div class="rating-group">
+                <input type="radio" id="q4_1" name="q4" value="1" required><label for="q4_1">1</label>
+                <input type="radio" id="q4_2" name="q4" value="2"><label for="q4_2">2</label>
+                <input type="radio" id="q4_3" name="q4" value="3"><label for="q4_3">3</label>
+                <input type="radio" id="q4_4" name="q4" value="4"><label for="q4_4">4</label>
+                <input type="radio" id="q4_5" name="q4" value="5"><label for="q4_5">5</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="question">5. ภาพรวมความพึงพอใจต่องานเลี้ยงบริษัทในครั้งนี้</label>
+            <div class="rating-group">
+                <input type="radio" id="q5_1" name="q5" value="1" required><label for="q5_1">1</label>
+                <input type="radio" id="q5_2" name="q5" value="2"><label for="q5_2">2</label>
+                <input type="radio" id="q5_3" name="q5" value="3"><label for="q5_3">3</label>
+                <input type="radio" id="q5_4" name="q5" value="4"><label for="q5_4">4</label>
+                <input type="radio" id="q5_5" name="q5" value="5"><label for="q5_5">5</label>
+            </div>
+        </div>
+
+        <div class="section-title">ส่วนที่ 2: ข้อเสนอแนะสำหรับอนาคต</div>
+
+        <div class="form-group">
+            <label class="question">6. ความคิดเห็นต่อการใช้บริการร้านอาหารนี้ในโอกาสต่อไป?</label>
+            <div class="choice-group">
+                <label><input type="radio" name="q6" value="เหมาะสม" required> เหมาะสม</label>
+                <label><input type="radio" name="q6" value="ไม่เหมาะสม"> ไม่เหมาะสม</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="question">7. ข้อเสนอแนะเพิ่มเติมสำหรับงานเลี้ยงครั้งนี้ (จำเป็น)</label>
+            <textarea name="q7" rows="3" required placeholder="พิมพ์ข้อเสนอแนะ..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="question">8. เสนอแนะร้านอาหาร หรือรูปแบบงานในครั้งต่อไป (จำเป็น)</label>
+            <textarea name="q8" rows="3" required placeholder="อยากไปร้านไหน แนวไหน บอกได้เลย..."></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn">ส่งแบบประเมิน</button>
+    </form>
+</div>
+<div class="container" id="successMessage">
+    <h3>✅ ส่งข้อมูลเรียบร้อย!</h3>
+    <p style="font-size: 1rem; color: #666; margin-bottom: 5px;">รบกวนแคปหน้าจอนี้ส่งเข้ากลุ่มเพื่อยืนยันนะครับ</p>
+    
+    <div id="timeStamp" style="font-size: 0.7rem; color: #adb5bd; font-family: monospace;">
+        <span id="submitTimeDisplay">00:00:00</span>
+    </div>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyk7veuNEPJymxJjIjIoJfKifcgEcpzIj5TlQHrY_nJ_XfRfNeiWLOs7cjT1J9CJtJu/exec'; 
+
+    const form = document.getElementById('surveyForm');
+    const btn = document.getElementById('submitBtn');
+    const formContainer = document.getElementById('formContainer');
+    const successMessage = document.getElementById('successMessage');
+    const submitTimeDisplay = document.getElementById('submitTimeDisplay');
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        btn.innerHTML = 'กำลังส่งข้อมูล...';
+        btn.disabled = true;
+
+        fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
+            .then(response => {
+                formContainer.style.display = 'none'; 
+                successMessage.style.display = 'block'; 
+                
+                // แสดงเวลาแบบ HH:mm:ss เนียนๆ
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('th-TH', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: false 
+                });
+                submitTimeDisplay.innerText = timeString;
+            })
+            .catch(error => {
+                alert('เกิดข้อผิดพลาด โปรดลองอีกครั้ง');
+                btn.innerHTML = 'ส่งแบบประเมิน';
+                btn.disabled = false;
+            });
+    });
+</script>
+
+</body>
+</html>
